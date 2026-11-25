@@ -210,11 +210,12 @@ def skeleton_card(frames, box_h, pad=5):
     return draw, h + 2 * pad
 
 
-def trapezoid(svg, x0, x1, cy, h_wide, h_narrow, wide_left, formula):
+def trapezoid(svg, x0, x1, cy, h_wide, h_narrow, wide_left, name, formula):
     hl, hr = (h_wide, h_narrow) if wide_left else (h_narrow, h_wide)
     svg.path(f"M{x0},{cy - hl / 2} L{x1},{cy - hr / 2} L{x1},{cy + hr / 2} L{x0},{cy + hl / 2} Z",
              fill="#F3F3F3", col="#555555", w=0.9)
-    svg.text((x0 + x1) / 2, cy + 3.5, formula, 10.5)
+    svg.text((x0 + x1) / 2, cy - 3, name, 10.5)
+    svg.text((x0 + x1) / 2, cy + 11, formula, 10.5)
 
 
 def fig_mtgp_vae(vae_path, out, clip=FIG1_CLIP):
@@ -238,9 +239,9 @@ def fig_mtgp_vae(vae_path, out, clip=FIG1_CLIP):
     stack(svg, ns, xs["in"], cy, draw_in)
     stack(svg, ns, xs["out"], cy, draw_out)
 
-    trapezoid(svg, *xs["enc"], cy, 62, 30, True,
+    trapezoid(svg, *xs["enc"], cy, 62, 30, True, "Encoder",
               f"{it('q')}({it('z')}{sub('t', ' | ')}{it('x')}{sub('t', ')')}")
-    trapezoid(svg, *xs["dec"], cy, 62, 30, False,
+    trapezoid(svg, *xs["dec"], cy, 62, 30, False, "Decoder",
               f"{it('p')}({it('x')}{sub('t', ' | ')}{it('z')}{sub('t', ')')}")
 
     # latent vectors: 32 cells coloured by body part, shade = encoder mean (real), dim k = the synthetic clip of (b)
@@ -261,9 +262,10 @@ def fig_mtgp_vae(vae_path, out, clip=FIG1_CLIP):
             a = (0.25 + 0.75 * (v[f, i] + 1) / 2) * (1.0 if k == 0 else 0.45)
             yy = y + i * ch + owner[i] * gap
             svg.rect(cx - cw / 2, yy, cw, ch, fill=mix(COL[p], a), col="white", sw=0.4)
-            if k == 0 and i == k_row:
-                svg.rect(cx - cw / 2 - 1.5, yy - 0.8, cw + 3, ch + 1.6, col=INK, sw=1.0)
-                svg.text(cx - cw / 2 - 6, yy + ch + 1.5, it("k"), 9, "end")
+        if k == 0:  # frame of dim k, drawn after every cell so that none covers it
+            yy = y + k_row * ch + owner[k_row] * gap
+            svg.rect(cx - cw / 2 - 1.5, yy - 0.8, cw + 3, ch + 1.6, col=INK, sw=1.0)
+            svg.text(cx - cw / 2 - 6, yy + ch + 1.5, it("k"), 9, "end")
 
     stack(svg, ns, xs["lat"], cy, draw_z)
     # arrows

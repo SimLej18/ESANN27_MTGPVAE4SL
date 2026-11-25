@@ -2,11 +2,65 @@
 
 Code of *Multi-Task Gaussian Process VAE for Sign Language Analysis* (ESANN 2027).
 
-## Main results
+## Model intuition and results
 
-*(To be written.)*
+Check out [our companion blog post](https://simlej18.github.io/ESANN27_MTGPVAE4SL/) for many interactive illustrations!
 
-<!-- Table 1: results/*.json (`just table`). Figures 1-3: figures/*.svg / *.pdf (`just figures`). -->
+### A VAE encodes poses, not motion
+
+Each frame is encoded on its own. Reconstructions are faithful, but the prior knows nothing about time: sampled frames
+jump from one pose to the next.
+
+![VAE](figures/gifs/vae.gif)
+
+### A GP-VAE adds time, not meaning
+
+A Gaussian process along time on each latent dimension makes samples smooth, but they drift without meaning.
+
+![GP-VAE](figures/gifs/gp_vae.gif)
+
+### The MTGP-VAE learns the motion of each sign
+
+Each sign gets a mean trajectory μ_s(t), shared by all its clips; a clip is this trajectory plus its own smooth
+deviation e_c(t).
+
+![MTGP-VAE framework](figures/fig_mtgp_vae.svg)
+
+Decoding μ_s shows the sign the model has learned; sampling a new deviation generates new clips of the sign.
+
+![MTGP-VAE](figures/gifs/mtgp_vae.gif)
+
+### It recognises signs...
+
+A clip is classified by its likelihood under each sign's trajectory (100 signs, balanced accuracy %, higher is better).
+
+| Model | Top-1 | Top-5 |
+|---|---|---|
+| Sign-VAE | 42.5 | 74.1 |
+| Sign-GP-VAE | 41.4 | 73.1 |
+| Sign-GP-VAE + MTGP post-hoc | 53.5 | 80.3 |
+| **MTGP-VAE** | **56.3** | **83.1** |
+
+### ...it spots and fixes tracking errors...
+
+A frame unlikely under its sign's trajectory is an outlier; the body part at fault is redrawn from the other frames.
+Here MediaPipe puts the right hand on the left wrist for one frame; the model's correction is in green.
+
+![Outlier correction](figures/gifs/outlier.gif)
+
+### ...and it can generate new clips too!
+
+Try to spot the **3 generated samples** among these 9 clips of *comprendre* ("to understand")!
+
+*Answer at the end of the readme.*
+
+![Real or generated?](figures/gifs/quiz.gif)
+
+### This is possible thanks to...
+
+* The [MagmaClust framework](https://jmlr.org/papers/v24/20-1321.html) by Leroy et al.
+* The [Kernax](https://github.com/UNamurCSFaculty/kernax-ml) and [Mimosa](https://github.com/UNamurCSFaculty/mimosa-ml) implementations by Lejoly et al.
+* The [LSFB corpus](https://huggingface.co/datasets/ppoitier/lsfb-isol) by the [LSFB-Lab](https://www.unamur.be/fr/naltt/lsfb-lab) and [HuMaLearn Team](https://humalearn.info.unamur.be/)
 
 ## Reproducing the results
 
@@ -92,9 +146,15 @@ scripts/        one script per command of the justfile
 data/           LSFB100 clip list and sign order (the built datasets are not versioned)
 checkpoints/    pre-trained VAE, the three trained models, the post-hoc prior
 results/        Table 1, one json per model
-figures/        figures 1-3 of the paper
+figures/        figures 1-3 of the paper; gifs/: the animations of this README (illustrations, no script)
 ```
 
 ## License
 
 MIT (see `LICENSE`).
+
+---
+
+**Quiz answer:** the generated clips are framed; the others are real LSFB-ISOL clips of *comprendre* (to understand).
+
+![Quiz answer](figures/gifs/quiz_answer.gif)
