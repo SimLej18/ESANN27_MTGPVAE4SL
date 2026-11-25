@@ -1,0 +1,9 @@
+__pycache__/
+*.py[cod]
+.venv/
+.DS_Store
+.idea/
+
+# Generated: data/lsfb100.npz (scripts/make_lsfb100.py), data/cont_frames.npy (scripts/make_cont.py)
+data/*.npz
+data/*.npy

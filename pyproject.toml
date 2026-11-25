@@ -1,0 +1,30 @@
+[project]
+name = "mtgpvae"
+version = "0.1.0"
+description = "Multi-Task Gaussian Process VAE for Sign Language Analysis (ESANN 2027)"
+readme = "README.md"
+requires-python = ">=3.14"
+# Exact versions: mimosa-ml and kernax-ml are alpha releases.
+dependencies = [
+    "equinox==0.13.8",
+    "jax==0.12.0.1",
+    "kernax-ml==0.7.6a0",
+    "matplotlib==3.11.2",
+    "mimosa-ml==0.5.0a0",
+    "numpy==2.5.4",
+    "optax==0.2.8",
+    "optimistix==0.1.0",
+    "sign-language-data-loading==1.0.2",
+    "sign-language-tools==1.0.0",
+]
+
+[project.optional-dependencies]
+cuda = ["jax[cuda12]==0.12.0.1"]
+
+[build-system]
+requires = ["uv_build>=0.12.5,<0.13"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "mtgpvae"
+module-root = ""
